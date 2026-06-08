@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/*
+ * Dark-by-default design tokens. A modern, data-focused palette: near-black
+ * slate background, cyan/emerald accents for highlights, soft borders.
+ */
+:root {
+  color-scheme: dark;
+
+  --background: #070b14;
+  --surface: #0d1320;
+  --surface-2: #121a2b;
+  --foreground: #e6edf6;
+  --muted: #8a97ad;
+  --border: #1e283c;
+
+  --primary: #22d3ee; /* cyan-400 */
+  --primary-foreground: #04121a;
+  --accent: #34d399; /* emerald-400 */
+  --highlight: #f59e0b; /* amber-500, single-country selection */
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-highlight: var(--highlight);
+
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle scrollbars that fit the dark theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+/* Soft radial glow behind the hero map. */
+.hero-glow {
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(34, 211, 238, 0.08), transparent 70%),
+    radial-gradient(40% 50% at 80% 30%, rgba(52, 211, 153, 0.06), transparent 70%);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.18s ease-out;
+}

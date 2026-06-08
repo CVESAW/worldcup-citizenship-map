@@ -1,0 +1,63 @@
+import { cn } from "@/lib/utils";
+
+/** Deterministic accent based on the name, so avatars feel varied but stable. */
+function hueFor(name: string): number {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  return h;
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts.at(-1)?.[0] ?? "")).toUpperCase();
+}
+
+/**
+ * Player image with a graceful initials fallback. `image_url` is rendered when
+ * present; otherwise a colourful monogram is shown (no broken-image states).
+ */
+export function PlayerAvatar({
+  name,
+  imageUrl,
+  size = 48,
+  className,
+}: {
+  name: string;
+  imageUrl?: string | null;
+  size?: number;
+  className?: string;
+}) {
+  if (imageUrl) {
+    // External, unoptimized to avoid next/image domain config for arbitrary hosts.
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={name}
+        width={size}
+        height={size}
+        className={cn("rounded-full object-cover", className)}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
+  const hue = hueFor(name);
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full font-semibold text-white",
+        className
+      )}
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.38,
+        background: `linear-gradient(135deg, hsl(${hue} 70% 42%), hsl(${(hue + 40) % 360} 70% 32%))`,
+      }}
+    >
+      {initials(name)}
+    </div>
+  );
+}
