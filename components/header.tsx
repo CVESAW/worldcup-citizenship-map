@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, BarChart3 } from "lucide-react";
+import { Globe, BarChart3, Gamepad2 } from "lucide-react";
 import { SearchBar } from "@/components/search-bar";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/", label: "Map", icon: Globe },
   { href: "/stats", label: "Stats", icon: BarChart3 },
+  { href: "/game", label: "Game", icon: Gamepad2 },
 ];
 
 export function Header() {
@@ -46,9 +47,4 @@ export function Header() {
         })}
       </nav>
 
-      <div className="ml-auto flex w-full max-w-md justify-end">
-        <SearchBar />
-      </div>
-    </header>
-  );
-}
+      <div className="ml-auto flex w-full max-w-md justify-

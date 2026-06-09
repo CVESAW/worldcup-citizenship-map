@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /** Deterministic accent based on the name, so avatars feel varied but stable. */
@@ -27,7 +30,9 @@ export function PlayerAvatar({
   size?: number;
   className?: string;
 }) {
-  if (imageUrl) {
+  const [errored, setErrored] = useState(false);
+
+  if (imageUrl && !errored) {
     // External, unoptimized to avoid next/image domain config for arbitrary hosts.
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -36,7 +41,8 @@ export function PlayerAvatar({
         alt={name}
         width={size}
         height={size}
-        className={cn("rounded-full object-cover", className)}
+        onError={() => setErrored(true)}
+        className={cn("rounded-full bg-surface-2 object-cover", className)}
         style={{ width: size, height: size }}
       />
     );
@@ -53,11 +59,4 @@ export function PlayerAvatar({
       style={{
         width: size,
         height: size,
-        fontSize: size * 0.38,
-        background: `linear-gradient(135deg, hsl(${hue} 70% 42%), hsl(${(hue + 40) % 360} 70% 32%))`,
-      }}
-    >
-      {initials(name)}
-    </div>
-  );
-}
+        fontSize: size *

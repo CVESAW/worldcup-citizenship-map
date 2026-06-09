@@ -21,6 +21,8 @@ import type {
   PlayerRow,
   PlayerRef,
   CitizenshipRow,
+  QuizQuestion,
+  QuizPlayer,
   RankedItem,
   SearchResult,
   StatsData,
@@ -243,6 +245,76 @@ export async function getTeamDetail(team: string): Promise<TeamDetail | null> {
     players: matches,
     countries,
   };
+}
+
+/**
+ * Build N rounds for the citizenship game. Each round shows `groupSize` players
+ * who all hold one country's citizenship; the player guesses which country.
+ */
+export async function getQuizQuestions(count = 12, groupSize = 3): Promise<QuizQuestion[]> {
+  const players = await getAllPlayers();
+  const allCountries = [
+    ...new Set(players.flatMap((p) => p.citizenships.map((c) => c.country))),
+  ];
+
+  const shuffle = <T>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  // Players with a portrait, grouped by each citizenship they hold.
+  const withFace = players.filter((p) => p.image_url);
+  const byCountry = new Map<string, Player[]>();
+  for (const p of withFace) {
+    for (const c of p.citizenships) {
+      const list = byCountry.get(c.country) ?? [];
+      list.push(p);
+      byCountry.set(c.country, list);
+    }
+  }
+
+  // Only countries with enough portrait-holders to fill a group.
+  const targets = shuffle(
+    [...byCountry.entries()].filter(([, list]) => list.length >= groupSize).map(([c]) => c)
+  );
+  if (targets.length === 0) return [];
+
+  const toQuizPlayer = (p: Player): QuizPlayer => ({
+    id: p.id,
+    name: p.name,
+    club: p.club,
+    image_url: p.image_url,
+    represented_country: p.represented_country,
+    citizenships: p.citizenships.map((c) => c.country),
+  });
+
+  const out: QuizQuestion[] = [];
+  for (let i = 0; i < count; i++) {
+    const target = targets[i % targets.length];
+    const group = shuffle(byCountry.get(target)!).slice(0, groupSize);
+
+    // Countries every player in the group shares (could be more than the target).
+    const shared = group
+      .map((p) => new Set(p.citizenships.map((c) => c.country)))
+      .reduce((acc, set) => new Set([...acc].filter((c) => set.has(c))));
+
+    // Distractors must NOT be shared by all (so `target` is the only answer).
+    const distractors = shuffle(
+      allCountries.filter((c) => !shared.has(c))
+    ).slice(0, 3);
+
+    out.push({
+      id: `${target}-${i}`,
+      players: group.map(toQuizPlayer),
+      options: shuffle([target, ...distractors]),
+      answer: target,
+    });
+  }
+  return out;
 }
 
 /** Distinct club names. */
@@ -480,77 +552,4 @@ export const getStats = cache(async (): Promise<StatsData> => {
 
   // --- Citizenship combinations (multi-nationality players) ---
   const comboMap = new Map<string, { countries: string[]; players: Player[] }>();
-  for (const p of players) {
-    if (p.citizenships.length < 2) continue;
-    const countries = [...p.citizenships.map((c) => c.country)].sort();
-    const key = countries.join(" + ");
-    const entry = comboMap.get(key) ?? { countries, players: [] };
-    entry.players.push(p);
-    comboMap.set(key, entry);
-  }
-  const comboEntries = [...comboMap.entries()];
-
-  const commonCombos: RankedItem[] = comboEntries
-    .sort((a, b) => b[1].players.length - a[1].players.length || a[0].localeCompare(b[0]))
-    .slice(0, 15)
-    .map(([key, v]) => ({
-      id: key,
-      label: key,
-      value: v.players.length,
-      countries: v.countries,
-      players: v.players.slice(0, DETAIL_CAP).map(toRef),
-    }));
-
-  // Count of one-of-a-kind citizenship pairings (kept as a KPI).
-  const uniqueCombosCount = comboEntries.filter(([, v]) => v.players.length === 1).length;
-
-  return {
-    kpis: {
-      players: players.length,
-      countries: summaries.length,
-      dual: players.filter((p) => p.citizenships.length > 1).length,
-      clubs: clubGroups.size,
-      nations: new Set(players.map((p) => p.represented_country)).size,
-      uniqueCombos: uniqueCombosCount,
-    },
-    mostLinkedCountries,
-    mostValuableCountries,
-    mostDualCountries,
-    mostDiverseTeams,
-    leastDiverseTeams,
-    clubsMostPlayers,
-    topExporters,
-    foreignBornTeams,
-    topBirthCountries,
-    commonCombos,
-  };
-});
-
-function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
-  const map = new Map<string, T[]>();
-  for (const item of items) {
-    const k = key(item);
-    const list = map.get(k) ?? [];
-    list.push(item);
-    map.set(k, list);
-  }
-  return map;
-}
-
-/** Rank groups by the number of distinct citizenship countries they contain. */
-function diversityRanking(groups: Map<string, Player[]>): RankedItem[] {
-  return [...groups.entries()]
-    .map(([id, members]) => {
-      const countries = [
-        ...new Set(members.flatMap((p) => p.citizenships.map((c) => c.country))),
-      ].sort();
-      return {
-        id,
-        label: id,
-        value: countries.length,
-        subtitle: `${members.length} player${members.length === 1 ? "" : "s"}`,
-        countries,
-      } satisfies RankedItem;
-    })
-    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
-}
+  for 

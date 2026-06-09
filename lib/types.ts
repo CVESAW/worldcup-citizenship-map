@@ -99,14 +99,18 @@ export interface StatsData {
   commonCombos: RankedItem[];
 }
 
-export type SearchResultType = "player" | "country" | "team";
-
-export interface SearchResult {
-  type: SearchResultType;
-  /** Stable id: player id, or the country/team name. */
+export interface QuizPlayer {
   id: string;
-  /** Primary line shown in the dropdown. */
-  label: string;
-  /** Secondary muted line (club, player count, etc.). */
-  sublabel: string;
+  name: string;
+  club: string;
+  image_url: string | null;
+  represented_country: string;
+  citizenships: string[];
 }
+
+/**
+ * One round of the citizenship game: several players who all share one
+ * citizenship — guess which country they all hold.
+ */
+export interface QuizQuestion {
+  id
