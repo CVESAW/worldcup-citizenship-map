@@ -47,4 +47,9 @@ export function Header() {
         })}
       </nav>
 
-      <div className="ml-auto flex w-full max-w-md justify-
+      <div className="ml-auto flex w-full max-w-md justify-end">
+        <SearchBar />
+      </div>
+    </header>
+  );
+}

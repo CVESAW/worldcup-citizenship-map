@@ -44,4 +44,27 @@ export function Footer() {
         </p>
         <p className="flex flex-wrap items-center justify-center gap-1.5">
           <Info className="h-3.5 w-3.5" />
-  
+          Note: the underlying base map renders Crimea within Russia&apos;s
+          borders. This is incorrect — Crimea is part of Ukraine, illegally
+          occupied by Russia.
+        </p>
+        <p className="flex flex-wrap items-center justify-center gap-1.5 text-muted/70">
+          World Cup Citizenship Map — an independent, educational visualisation.
+          Not affiliated with FIFA or Transfermarkt.
+        </p>
+        <p className="flex items-center justify-center">
+          <a
+            href="https://x.com/HamillSamuel"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Follow @HamillSamuel on X"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+            @HamillSamuel
+          </a>
+        </p>
+      </div>
+    </footer>
+  );
+}

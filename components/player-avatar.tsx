@@ -59,4 +59,11 @@ export function PlayerAvatar({
       style={{
         width: size,
         height: size,
-        fontSize: size *
+        fontSize: size * 0.38,
+        background: `linear-gradient(135deg, hsl(${hue} 70% 42%), hsl(${(hue + 40) % 360} 70% 32%))`,
+      }}
+    >
+      {initials(name)}
+    </div>
+  );
+}
