@@ -552,4 +552,77 @@ export const getStats = cache(async (): Promise<StatsData> => {
 
   // --- Citizenship combinations (multi-nationality players) ---
   const comboMap = new Map<string, { countries: string[]; players: Player[] }>();
-  for 
+  for (const p of players) {
+    if (p.citizenships.length < 2) continue;
+    const countries = [...p.citizenships.map((c) => c.country)].sort();
+    const key = countries.join(" + ");
+    const entry = comboMap.get(key) ?? { countries, players: [] };
+    entry.players.push(p);
+    comboMap.set(key, entry);
+  }
+  const comboEntries = [...comboMap.entries()];
+
+  const commonCombos: RankedItem[] = comboEntries
+    .sort((a, b) => b[1].players.length - a[1].players.length || a[0].localeCompare(b[0]))
+    .slice(0, 15)
+    .map(([key, v]) => ({
+      id: key,
+      label: key,
+      value: v.players.length,
+      countries: v.countries,
+      players: v.players.slice(0, DETAIL_CAP).map(toRef),
+    }));
+
+  // Count of one-of-a-kind citizenship pairings (kept as a KPI).
+  const uniqueCombosCount = comboEntries.filter(([, v]) => v.players.length === 1).length;
+
+  return {
+    kpis: {
+      players: players.length,
+      countries: summaries.length,
+      dual: players.filter((p) => p.citizenships.length > 1).length,
+      clubs: clubGroups.size,
+      nations: new Set(players.map((p) => p.represented_country)).size,
+      uniqueCombos: uniqueCombosCount,
+    },
+    mostLinkedCountries,
+    mostValuableCountries,
+    mostDualCountries,
+    mostDiverseTeams,
+    leastDiverseTeams,
+    clubsMostPlayers,
+    topExporters,
+    foreignBornTeams,
+    topBirthCountries,
+    commonCombos,
+  };
+});
+
+function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    const k = key(item);
+    const list = map.get(k) ?? [];
+    list.push(item);
+    map.set(k, list);
+  }
+  return map;
+}
+
+/** Rank groups by the number of distinct citizenship countries they contain. */
+function diversityRanking(groups: Map<string, Player[]>): RankedItem[] {
+  return [...groups.entries()]
+    .map(([id, members]) => {
+      const countries = [
+        ...new Set(members.flatMap((p) => p.citizenships.map((c) => c.country))),
+      ].sort();
+      return {
+        id,
+        label: id,
+        value: countries.length,
+        subtitle: `${members.length} player${members.length === 1 ? "" : "s"}`,
+        countries,
+      } satisfies RankedItem;
+    })
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+}
