@@ -113,4 +113,22 @@ export interface QuizPlayer {
  * citizenship — guess which country they all hold.
  */
 export interface QuizQuestion {
-  id
+  id: string;
+  players: QuizPlayer[];
+  /** 4 country options, shuffled. */
+  options: string[];
+  /** The correct option — the citizenship every shown player holds. */
+  answer: string;
+}
+
+export type SearchResultType = "player" | "country" | "team";
+
+export interface SearchResult {
+  type: SearchResultType;
+  /** Stable id: player id, or the country/team name. */
+  id: string;
+  /** Primary line shown in the dropdown. */
+  label: string;
+  /** Secondary muted line (club, player count, etc.). */
+  sublabel: string;
+}
